@@ -20,8 +20,8 @@ ABpair oatb(arr X,arr Y)
 {
 	int A=0,B=0;
 	int flag[N]={0};
-	forr(i,M) flag[X[i]]=i+1;
-	forr(i,M)
+	forr(i,M) if(X[i]>=0) flag[X[i]]=i+1;
+	forr(i,M) if(Y[i]>=0)
 	{
 		int tmp=flag[Y[i]];
 		if(tmp==i+1) A++;

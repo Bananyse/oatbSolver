@@ -17,7 +17,7 @@ private:
 	set<int> outerSpace; //contains untouched numbers
 	
 	void recur_gAG(set<int> curInner,record curRule,arr curArr,int availOuter,int progress);
-	set<arr> availGuess;
+	vector<arr> availGuess;
 	
 public:
 	solver() {};
@@ -59,6 +59,14 @@ void solver::genAvailGuess()
 	availGuess.clear();
 	arr tmpArr = {};
 	recur_gAG(innerSpace,guessHistory,tmpArr,outerSpace.size(),0);
+	/*
+	cout<<availGuess.size()<<endl;
+	for(auto i:availGuess)
+	{
+		for(auto j:i) cout<<toChar(j);
+		cout<<endl;
+	}
+	*/
 	return;
 }
 void solver::recur_gAG(set<int> curInner,record curRule,arr curArr,int availOuter,int progress)
@@ -70,8 +78,8 @@ void solver::recur_gAG(set<int> curInner,record curRule,arr curArr,int availOute
 			if(rule.second.first||rule.second.second)
 				{flag=true;break;}
 		if(flag) return;
-		for(auto i:curArr) cout<<toChar(i);
-		cout<<endl;
+		
+		availGuess.push_back(curArr);
 		return;
 	}
 	
@@ -118,5 +126,6 @@ int main()
 	Solver.addRecord({0,1,2,3,4,5},make_pair(3,0));
 	Solver.addRecord({0,1,2,6,7,8},make_pair(3,0));
 	Solver.genAvailGuess();
+	
 	return 0;
 }
