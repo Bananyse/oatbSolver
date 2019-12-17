@@ -1,3 +1,5 @@
+#ifndef OATBBASIC_H
+#define OATBBASIC_H
 #include <bits/stdc++.h>
 
 #define forr(_I,_N) for(int _I=0;_I<(_N);_I++)
@@ -29,3 +31,4 @@ ABpair oatb(arr X,arr Y)
 	}
 	return std::make_pair(A,B);
 }
+#endif
