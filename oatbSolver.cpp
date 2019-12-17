@@ -16,7 +16,7 @@ private:
 	set<int> innerSpace; //contains numbers that can be found in guessHistory
 	set<int> outerSpace; //contains untouched numbers
 	
-	void recur_gAG(set<int> curInner,set<int> curOuter,arr curArr,int progress);
+	void recur_gAG(set<int> curInner,record curRule,arr curArr,int availOuter,int progress);
 	set<arr> availGuess;
 	
 public:
@@ -27,7 +27,7 @@ public:
 	void addRecord(arr Y, ABpair ab);
 	void genAvailGuess();
 	
-}glbCond;
+}Solver;
 
 void solver::initialize()
 {
@@ -58,27 +58,65 @@ void solver::genAvailGuess()
 {
 	availGuess.clear();
 	arr tmpArr = {};
-	recur_gAG(innerSpace,outerSpace,tmpArr,0);
+	recur_gAG(innerSpace,guessHistory,tmpArr,outerSpace.size(),0);
 	return;
 }
-void solver::recur_gAG(set<int> curInner,set<int> curOuter,arr curArr,int progress)
+void solver::recur_gAG(set<int> curInner,record curRule,arr curArr,int availOuter,int progress)
 {
 	if(progress==M)
 	{
-		for(auto i:curArr) cout<<i;
+		bool flag = false;
+		for(auto rule:curRule)
+			if(rule.second.first||rule.second.second)
+				{flag=true;break;}
+		if(flag) return;
+		for(auto i:curArr) cout<<toChar(i);
 		cout<<endl;
 		return;
 	}
+	
 	for(auto i:curInner)
 	{
-		
+		//Try picking i as Arr[progress]
+		set<int> nxtInner = curInner;
+		record nxtRule = curRule;
+		arr nxtArr = curArr;
+		bool flag = false;
+		for(auto hID:toHistory[i])
+		{
+			bool isA = curRule[hID].first[progress]==i;
+			bool noA = curRule[hID].second.first<1;
+			bool noB = curRule[hID].second.second<1;
+			if(isA)
+			{
+				if(noA) { flag=true; break; }
+				nxtRule[hID].second.first--;
+			}
+			else //isB
+			{
+				if(noB) { flag=true; break; }
+				nxtRule[hID].second.second--;
+			}
+		}
+		if(flag) continue;
+		nxtInner.erase(i);
+		nxtArr[progress] = i;
+		recur_gAG(nxtInner,nxtRule,nxtArr,availOuter,progress+1);
+	}
+	if(availOuter)
+	{
+		arr nxtArr = curArr;
+		nxtArr[progress] = -1;
+		recur_gAG(curInner,curRule,nxtArr,availOuter-1,progress+1);
 	}
 	return;
 }
 
 int main()
 {
-	glbCond.initialize();
-	glbCond.addRecord({0,1,2,3,4,5},make_pair(3,2));
+	Solver.initialize();
+	Solver.addRecord({0,1,2,3,4,5},make_pair(3,0));
+	Solver.addRecord({0,1,2,6,7,8},make_pair(3,0));
+	Solver.genAvailGuess();
 	return 0;
 }
