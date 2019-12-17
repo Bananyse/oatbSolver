@@ -8,8 +8,6 @@ const int M = 6;
 typedef std::pair<int,int> ABpair;
 typedef std::array<int,M> arr;
 
-inline int ABtot(ABpair ab) {return ab.first+ab.second;}
-
 char toChar(int x)
 {
 	if(x<0) return '-';
