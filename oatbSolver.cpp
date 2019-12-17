@@ -8,10 +8,11 @@ typedef pair<int,int> ABpair;
 typedef array<int,M> arr;
 typedef pair<arr,ABpair> result;
 typedef vector<result> record;
+typedef long long lint;
 
 class solver 
 {
-private:
+public:
 	record guessHistory; //records the history of Y and oatb(X,Y)
 	array<vector<int>,N> toHistory; //toHistory[i] records all guessHistory[j] that have i
 	set<int> innerSpace; //contains numbers that can be found in guessHistory
@@ -20,8 +21,9 @@ private:
 	void recur_gAG(set<int> curInner,record curRule,arr curArr,int availOuter,int progress);
 	vector<arr> availGuess;
 	
-	facList<double> fac();
-	combTable<int> comb();
+	facList<double> fac;
+	combTable<double> comb;
+	double F(arr Y);
 	
 public:
 	solver() {};
@@ -31,7 +33,14 @@ public:
 	void addRecord(arr Y, ABpair ab);
 	void genAvailGuess();
 	
-	double F(arr Y);
+	double order(int n,int m) {return fac.get(n)/fac.get(n-m);}
+	double disorder(int n)
+	{
+		if(!n) return 1;
+		double tmp1 = (double)fac.get(n);
+		lint tmp2 = (lint)(tmp1/exp(1)+0.5);
+		return (double)tmp2;
+	}
 	
 }Solver;
 
@@ -133,7 +142,7 @@ double solver::F(arr Y)
 	
 	for(auto X:availGuess)
 	{
-		int A=0,B=0;
+		int biasA=0,biasB=0;
 		int negXY=0,negX=0,negY=0;
 		int flag[N]={0};
 		forr(i,M)
@@ -147,13 +156,11 @@ double solver::F(arr Y)
 			if(Y[i]>=0)
 			{
 				int tmp=flag[Y[i]];
-				if(tmp==i+1) A++;
-				else if(tmp) B++;
+				if(tmp==i+1) biasA++;
+				else if(tmp) biasB++;
 			}
 			else if(X[i]>=0) negY++;
 		}
-		SabY[A][B] ++;
-		
 		int space=outerSpace.size()-negXY-negY;
 		for(auto i:X) printf("%c",toChar(i));
 		printf(":[%d],[%d,%d],[%d]\n",negXY,negY,negX,space);
@@ -162,7 +169,7 @@ double solver::F(arr Y)
 	forr(i,M+1) forr(j,M+1-i)
 	{
 		double tmp=SabY[i][j];
-		printf("%dA%dB:%d\n",i,j,(int)tmp);
+		//printf("%dA%dB:%d\n",i,j,(int)tmp);
 		if(tmp>0) f += tmp*log(tmp);
 	}
 	return f;
@@ -170,13 +177,24 @@ double solver::F(arr Y)
 
 int main()
 {
+	
 	Solver.initialize();
 	Solver.addRecord({0,1,2,3,4,5},make_pair(3,0));
-	Solver.addRecord({0,1,2,6,7,8},make_pair(3,0));
+	//Solver.addRecord({0,1,2,6,7,8},make_pair(3,0));
 	Solver.genAvailGuess();
 	
 	cout<<endl;
 	Solver.F({0,1,2,-1,-1,-1});
+	cout<<endl;
 	
+	int sum = 0;
+	for(int i=5;i>=0;i--)
+	{
+		int o = (int)Solver.comb.getC(5,i);
+		int d = (int)Solver.disorder(5-i);
+		printf("C(5,%d)*disorder(%d) = %d*%d = %d\n",i,5-i,o,d,o*d);
+		sum += o*d;
+	}
+	printf("sum: %d\norder(5,5): %d",sum,(int)Solver.order(5,5));
 	return 0;
 }

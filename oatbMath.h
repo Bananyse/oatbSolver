@@ -46,7 +46,7 @@ public:
 			for(int j=1;j<=i;j++)
 				C[i][j] = C[i-1][j] + C[i-1][j-1];
 	}
-	type get(int n,int m)
+	type getC(int n,int m)
 	{
 		return C[n][m];
 	}
