@@ -7,7 +7,6 @@ const int M = 6;
 
 typedef std::pair<int,int> ABpair;
 typedef std::array<int,M> arr;
-typedef std::vector<arr> pool;
 
 inline int ABtot(ABpair ab) {return ab.first+ab.second;}
 
