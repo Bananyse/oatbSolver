@@ -12,7 +12,7 @@ typedef long long lint;
 
 class solver 
 {
-public:
+private:
 	record guessHistory; //records the history of Y and oatb(X,Y)
 	array<vector<int>,N> toHistory; //toHistory[i] records all guessHistory[j] that have i
 	set<int> innerSpace; //contains numbers that can be found in guessHistory
@@ -24,6 +24,12 @@ public:
 	facList<double> fac;
 	combTable<double> comb;
 	double F(arr Y);
+	//This 'genNegComb()' thing is bullshit
+	//I'll get rid of this stupid recursion ASAP
+	void genNegComb(
+		int sizX,int sizY,int negXY,int totSpace,
+		int num,int depth,vector<int> &tmpArr,
+		double table[M+1][M+1],int biasA,int biasB);
 	
 public:
 	solver() {};
@@ -40,6 +46,27 @@ public:
 		double tmp1 = (double)fac.get(n);
 		lint tmp2 = (lint)(tmp1/exp(1)+0.5);
 		return (double)tmp2;
+	}
+	double solve(arr &Y_min)
+	{
+		genAvailGuess();
+		double SabY_min = DBL_MAX;
+		for(auto &Y:availGuess)
+		{
+			double SabY=F(Y);
+			if(SabY<SabY_min)
+			{
+				Y_min = Y;
+				SabY_min = SabY;
+			}
+		}
+		set<int> out = outerSpace;
+		forr(i,M) if(Y_min[i]<0)
+		{
+			Y_min[i] = *out.begin();
+			out.erase(Y_min[i]);
+		}
+		return SabY_min;
 	}
 	
 }Solver;
@@ -74,14 +101,14 @@ void solver::genAvailGuess()
 	availGuess.clear();
 	arr tmpArr = {};
 	recur_gAG(innerSpace,guessHistory,tmpArr,outerSpace.size(),0);
-	
+	/*
 	cout<<availGuess.size()<<endl;
 	for(auto i:availGuess)
 	{
 		for(auto j:i) cout<<toChar(j);
 		cout<<endl;
 	}
-	
+	*/
 	return;
 }
 void solver::recur_gAG(set<int> curInner,record curRule,arr curArr,int availOuter,int progress)
@@ -162,8 +189,10 @@ double solver::F(arr Y)
 			else if(X[i]>=0) negY++;
 		}
 		int space=outerSpace.size()-negXY-negY;
-		for(auto i:X) printf("%c",toChar(i));
-		printf(":[%d],[%d,%d],[%d]\n",negXY,negY,negX,space);
+		vector<int> tmpArr(negXY+negX);
+		genNegComb(negXY+negX,negXY+negY,negXY,space+negXY+negY,0,0,tmpArr,SabY,biasA,biasB);
+		//for(auto i:X) printf("%c",toChar(i));
+		//printf(":[%d],[%d,%d],[%d]\n",negXY,negY,negX,space);
 	}
 	
 	forr(i,M+1) forr(j,M+1-i)
@@ -175,26 +204,46 @@ double solver::F(arr Y)
 	return f;
 }
 
+//******BULLSHIT DONT TOUCH******
+void solver::genNegComb(
+	int sizX,int sizY,int negXY,int totSpace,
+	int num,int depth,vector<int> &tmpArr,
+	double table[M+1][M+1],int biasA,int biasB)
+{
+	if(depth==sizX)
+	{
+		vector<int> tmp = tmpArr;
+		do{
+			int a=0,c=0;
+			forr(i,sizX)
+			{
+				if(i<negXY && tmp[i]==i) a++;
+				if(tmp[i]<sizY) c++;
+			}
+			table[a+biasA][c-a+biasB]++;
+		}
+		while(next_permutation(tmp.begin(),tmp.end()));
+		return;
+	}
+	int target=totSpace-sizX+depth;
+	for(int i=num;i<=target;i++)
+	{
+		tmpArr[depth]=i;
+		genNegComb(sizX,sizY,negXY,totSpace,i+1,depth+1,tmpArr,table,biasA,biasB);
+	}
+	return;
+}
+//******BULLSHIT DONT TOUCH******
+
 int main()
 {
-	
 	Solver.initialize();
-	Solver.addRecord({0,1,2,3,4,5},make_pair(3,0));
-	//Solver.addRecord({0,1,2,6,7,8},make_pair(3,0));
-	Solver.genAvailGuess();
+	Solver.addRecord({0,1,2,3,4,5},make_pair(0,0));
+	//Solver.addRecord({6,7,8,9,10,11},make_pair(0,2));
 	
-	cout<<endl;
-	Solver.F({0,1,2,-1,-1,-1});
-	cout<<endl;
+	arr Y = {0};
+	Solver.solve(Y);
+	for(auto i:Y) cout<<toChar(i);
 	
-	int sum = 0;
-	for(int i=5;i>=0;i--)
-	{
-		int o = (int)Solver.comb.getC(5,i);
-		int d = (int)Solver.disorder(5-i);
-		printf("C(5,%d)*disorder(%d) = %d*%d = %d\n",i,5-i,o,d,o*d);
-		sum += o*d;
-	}
-	printf("sum: %d\norder(5,5): %d",sum,(int)Solver.order(5,5));
 	return 0;
 }
